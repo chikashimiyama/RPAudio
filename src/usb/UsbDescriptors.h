@@ -1,0 +1,38 @@
+#pragma once
+
+// Included from tusb_config.h, so this header must not include tusb.h itself.
+
+// UAC2 entity IDs (arbitrary, unique)
+#define RP_UAC2_ENTITY_CLOCK            0x04
+#define RP_UAC2_ENTITY_SPK_INPUT_TERM   0x01
+#define RP_UAC2_ENTITY_SPK_OUTPUT_TERM  0x03
+#define RP_UAC2_ENTITY_MIC_INPUT_TERM   0x11
+#define RP_UAC2_ENTITY_MIC_OUTPUT_TERM  0x13
+
+#define RP_ITF_NUM_AUDIO_CONTROL        0
+#define RP_ITF_NUM_AUDIO_STREAMING_SPK  1
+#define RP_ITF_NUM_AUDIO_STREAMING_MIC  2
+#define RP_ITF_NUM_TOTAL                3
+
+#define RP_AUDIO_DESC_LEN (TUD_AUDIO_DESC_IAD_LEN \
+    + TUD_AUDIO_DESC_STD_AC_LEN \
+    + TUD_AUDIO_DESC_CS_AC_LEN \
+    + TUD_AUDIO_DESC_CLK_SRC_LEN \
+    + TUD_AUDIO_DESC_INPUT_TERM_LEN \
+    + TUD_AUDIO_DESC_OUTPUT_TERM_LEN \
+    + TUD_AUDIO_DESC_INPUT_TERM_LEN \
+    + TUD_AUDIO_DESC_OUTPUT_TERM_LEN \
+    /* Speaker AS: alt 0, alt 1 */ \
+    + TUD_AUDIO_DESC_STD_AS_INT_LEN \
+    + TUD_AUDIO_DESC_STD_AS_INT_LEN \
+    + TUD_AUDIO_DESC_CS_AS_INT_LEN \
+    + TUD_AUDIO_DESC_TYPE_I_FORMAT_LEN \
+    + TUD_AUDIO_DESC_STD_AS_ISO_EP_LEN \
+    + TUD_AUDIO_DESC_CS_AS_ISO_EP_LEN \
+    /* Microphone AS: alt 0, alt 1 */ \
+    + TUD_AUDIO_DESC_STD_AS_INT_LEN \
+    + TUD_AUDIO_DESC_STD_AS_INT_LEN \
+    + TUD_AUDIO_DESC_CS_AS_INT_LEN \
+    + TUD_AUDIO_DESC_TYPE_I_FORMAT_LEN \
+    + TUD_AUDIO_DESC_STD_AS_ISO_EP_LEN \
+    + TUD_AUDIO_DESC_CS_AS_ISO_EP_LEN)
