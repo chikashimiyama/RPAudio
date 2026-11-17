@@ -21,10 +21,14 @@ extern "C" {
 #define CFG_TUD_MAX_SPEED           OPT_MODE_FULL_SPEED
 #define CFG_TUD_ENDPOINT0_SIZE      64
 
+#if RP_USB_DEBUG_LOG
 #define CFG_TUD_CDC                 1 // debug log serial port
 #define CFG_TUD_CDC_RX_BUFSIZE      64
 #define CFG_TUD_CDC_TX_BUFSIZE      1024
 #define CFG_TUD_CDC_EP_BUFSIZE      64
+#else
+#define CFG_TUD_CDC                 0
+#endif
 #define CFG_TUD_MSC                 0
 #define CFG_TUD_HID                 0
 #define CFG_TUD_MIDI                0

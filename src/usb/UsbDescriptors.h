@@ -15,8 +15,12 @@
 #define RP_ITF_NUM_AUDIO_STREAMING_MIC  2
 #define RP_ITF_NUM_AUDIO_TOTAL          3
 #define RP_ITF_NUM_RESET                3 // picotool reset interface (outside the audio IAD)
+#if RP_USB_DEBUG_LOG
 #define RP_ITF_NUM_DEBUG_CDC           4 // debug log serial port (2 interfaces)
 #define RP_ITF_NUM_TOTAL                6
+#else
+#define RP_ITF_NUM_TOTAL                4
+#endif
 
 #define RP_EP_AUDIO_OUT                 0x01 // speaker stream (host -> device)
 #define RP_EP_AUDIO_IN                  0x81 // microphone stream (device -> host)

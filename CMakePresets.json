@@ -15,12 +15,12 @@
         {
             "name": "debug",
             "inherits": "base",
-            "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+            "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug", "RPDSP_USB_DEBUG_LOG": "ON" }
         },
         {
             "name": "release",
             "inherits": "base",
-            "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+            "cacheVariables": { "CMAKE_BUILD_TYPE": "Release", "RPDSP_USB_DEBUG_LOG": "OFF" }
         }
     ],
     "buildPresets": [

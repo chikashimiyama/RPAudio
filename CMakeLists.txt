@@ -4,9 +4,17 @@ cmake_minimum_required(VERSION 3.21)
 set(PICO_BOARD sparkfun_promicro_rp2350 CACHE STRING "Target board")
 set(PICO_PLATFORM rp2350-arm-s CACHE STRING "Target platform")
 
+# USB debug log: adds a CDC serial port ("rpdsp Debug") that carries control requests, stream statistics and
+# TinyUSB warnings. Changes the USB interface set, so the device uses a different idProduct when enabled.
+option(RPDSP_USB_DEBUG_LOG "Expose a USB serial port with the firmware debug log" OFF)
+
 # TinyUSB debug logging level (picked up by TinyUSB's rp2040 family.cmake). Level 1 reports failed asserts and
-# warnings; the output goes to the in-memory debug log (see CFG_TUSB_DEBUG_PRINTF below), not to UART.
-set(LOG 1)
+# warnings; it goes to the in-memory debug log (see CFG_TUSB_DEBUG_PRINTF below), so it needs the USB debug log.
+if(RPDSP_USB_DEBUG_LOG)
+    set(LOG 1)
+else()
+    set(LOG 0)
+endif()
 
 include(cmake/pico_sdk_import.cmake)
 
@@ -23,8 +31,18 @@ add_executable(rpdsp
     src/usb/AudioDevice.cpp
     src/usb/UsbDescriptors.cpp
     src/led/Ws2812.cpp
-    src/debug/DebugLog.cpp
 )
+
+if(RPDSP_USB_DEBUG_LOG)
+    target_sources(rpdsp PRIVATE src/debug/DebugLog.cpp)
+    target_compile_definitions(rpdsp PRIVATE
+        RP_USB_DEBUG_LOG=1
+        # Route TinyUSB debug messages into the debug log ring buffer
+        CFG_TUSB_DEBUG_PRINTF=rp_debug_tusb_printf
+    )
+else()
+    target_compile_definitions(rpdsp PRIVATE RP_USB_DEBUG_LOG=0)
+endif()
 
 target_include_directories(rpdsp PRIVATE
     src
@@ -53,8 +71,6 @@ target_compile_definitions(rpdsp PRIVATE
     PICO_USB_RESET_INCLUDE_DEFAULT_APP_DRIVER_CB=1
     PICO_USB_RESET_SUPPORT_MS_OS_20_DESCRIPTOR=1
     PICO_USB_RESET_MS_OS_20_DESCRIPTOR_ITF=3
-    # Route TinyUSB debug messages into the debug log ring buffer
-    CFG_TUSB_DEBUG_PRINTF=rp_debug_tusb_printf
 )
 
 # USB is owned by the audio device, so stdio goes to UART (GP0/GP1)
