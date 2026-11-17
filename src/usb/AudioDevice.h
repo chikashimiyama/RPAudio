@@ -1,39 +1,61 @@
 #pragma once
 
+#include <cstddef>
+#include <cstdint>
+
 #include "dsp/IAudioProcessor.h"
+#include "tusb.h"
+#include "usb/AudioControl.h"
+#include "usb/StreamMonitor.h"
 
 namespace rp::usb
 {
 
-// USB Audio Class 2 device: mono 16-bit 48 kHz.
-// Audio received from the host (speaker) is processed and sent back to the host (microphone).
-// Only one instance may exist, because the TinyUSB callbacks are global.
-class AudioDevice
-{
-public:
-    explicit AudioDevice(dsp::IAudioProcessorPtr processor);
-    ~AudioDevice();
+    // USB Audio Class 2 device: mono 16-bit 48 kHz.
+    // Audio received from the host (speaker) is processed and sent back to the host (microphone).
+    // Only one instance may exist, because the TinyUSB callbacks are global.
+    class AudioDevice
+    {
+    public:
+        explicit AudioDevice(dsp::IAudioProcessorPtr processor);
+        ~AudioDevice();
 
-    AudioDevice(const AudioDevice&) = delete;
-    AudioDevice& operator=(const AudioDevice&) = delete;
+        AudioDevice(const AudioDevice&) = delete;
+        AudioDevice& operator=(const AudioDevice&) = delete;
 
-    // Must be called repeatedly from the main loop.
-    void task();
+        // Must be called repeatedly from the main loop.
+        void task();
 
-    // Called from the TinyUSB OUT-endpoint callback.
-    void onAudioReceived(size_t numBytes);
+        // Logs packet counts since the previous call. Call about once per second.
+        void logStats();
 
-    // Logs packet counts since the previous call. Call about once per second.
-    void logStats();
+        // True if the host sent speaker data recently.
+        bool isSpeakerStreaming() const;
 
-    // True if the host sent speaker data recently.
-    bool isSpeakerStreaming() const;
+        // True if the host polled the microphone endpoint recently.
+        bool isMicrophoneStreaming() const;
 
-    // True if the host polled the microphone endpoint recently.
-    bool isMicrophoneStreaming() const;
+        // ---- Called from the TinyUSB audio callbacks ----
 
-private:
-    dsp::IAudioProcessorPtr processor_;
-};
+        // A speaker (OUT) packet was decoded into the receive FIFO.
+        void onSpeakerPacketReceived(size_t numBytes);
+
+        // The next microphone (IN) packet is about to be loaded from the transmit FIFO.
+        void onMicrophonePacketLoading();
+
+        // A microphone (IN) packet was sent.
+        void onMicrophonePacketSent(size_t numBytes);
+
+        bool handleEntityGetRequest(uint8_t rhport, const tusb_control_request_t* request);
+        bool handleEntitySetRequest(const tusb_control_request_t* request, const uint8_t* data);
+
+        // Streaming on an interface stops (alt 0) or restarts.
+        void onStreamClosing(uint8_t interfaceNumber);
+
+    private:
+        dsp::IAudioProcessorPtr processor_;
+        AudioControl audioControl_;
+        StreamMonitor streamMonitor_;
+    };
 
 } // namespace rp::usb

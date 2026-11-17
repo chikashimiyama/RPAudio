@@ -29,8 +29,13 @@ add_executable(rpdsp
     src/main.cpp
     src/dsp/RingModulator.cpp
     src/usb/AudioDevice.cpp
+    src/usb/AudioControl.cpp
+    src/usb/StreamMonitor.cpp
+    src/usb/IsoEndpoint.cpp
     src/usb/UsbDescriptors.cpp
     src/led/Ws2812.cpp
+    src/led/Heartbeat.cpp
+    src/util/PeriodicTimer.cpp
 )
 
 if(RPDSP_USB_DEBUG_LOG)

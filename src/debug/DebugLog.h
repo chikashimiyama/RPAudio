@@ -9,25 +9,25 @@ namespace rp::debug
 
 #if RP_USB_DEBUG_LOG
 
-// Appends a timestamped, formatted line to the in-memory log. Safe to call from interrupts and from inside
-// TinyUSB callbacks: it never touches USB itself.
-void log(const char* format, ...) __attribute__((format(printf, 1, 2)));
+    // Appends a timestamped, formatted line to the in-memory log. Safe to call from interrupts and from inside
+    // TinyUSB callbacks: it never touches USB itself.
+    void log(const char* format, ...) __attribute__((format(printf, 1, 2)));
 
-// Appends raw formatted text (no timestamp, no newline).
-void logRawV(const char* format, va_list args);
+    // Appends raw formatted text (no timestamp, no newline).
+    void logRawV(const char* format, va_list args);
 
-// Sends buffered log text to the debug CDC serial port. Call from the main loop, outside tud_task().
-void flush();
+    // Sends buffered log text to the debug CDC serial port. Call from the main loop, outside tud_task().
+    void flush();
 
 #else
 
-inline void log(const char* /*format*/, ...)
-{
-}
+    inline void log(const char* /*format*/, ...)
+    {
+    }
 
-inline void flush()
-{
-}
+    inline void flush()
+    {
+    }
 
 #endif
 

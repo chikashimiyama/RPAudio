@@ -1,0 +1,107 @@
+# Derived from the existing SGDCore / SGDAudio / SGD sources.
+# Note: dependencies/DSP carries its own .clang-format and is not governed by this file.
+Language: Cpp
+BasedOnStyle: LLVM
+Standard: c++17
+
+# Indentation
+AccessModifierOffset: -4
+ConstructorInitializerIndentWidth: 4
+ContinuationIndentWidth: 4
+IndentCaseLabels: true
+IndentExternBlock: true
+IndentPPDirectives: None
+IndentWidth: 4
+NamespaceIndentation: All
+TabWidth: 4
+UseTab: Never
+
+# Line breaking
+ColumnLimit: 120
+AllowAllArgumentsOnNextLine: true
+AllowAllParametersOfDeclarationOnNextLine: true
+AllowShortBlocksOnASingleLine: Never
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortEnumsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLambdasOnASingleLine: All
+AllowShortLoopsOnASingleLine: false
+AlwaysBreakTemplateDeclarations: Yes
+BinPackArguments: true
+BinPackParameters: true
+BreakBeforeBinaryOperators: None
+BreakBeforeTernaryOperators: true
+BreakConstructorInitializers: BeforeComma
+BreakInheritanceList: BeforeColon
+BreakStringLiterals: false
+PackConstructorInitializers: Never
+PenaltyReturnTypeOnItsOwnLine: 1000
+
+# Braces on their own line (Allman), including lambda bodies
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterCaseLabel: true
+  AfterClass: true
+  AfterControlStatement: Always
+  AfterEnum: true
+  AfterExternBlock: true
+  AfterFunction: true
+  AfterNamespace: true
+  AfterStruct: true
+  AfterUnion: true
+  BeforeCatch: false
+  BeforeElse: true
+  BeforeLambdaBody: true
+  IndentBraces: false
+  SplitEmptyFunction: true
+  SplitEmptyRecord: true
+
+# Alignment
+AlignAfterOpenBracket: Align
+AlignConsecutiveAssignments: None
+AlignEscapedNewlines: Left
+AlignOperands: Align
+AlignTrailingComments: false
+
+# Spacing
+DerivePointerAlignment: false
+PointerAlignment: Left
+ReferenceAlignment: Pointer
+SpaceAfterCStyleCast: true
+SpaceAfterLogicalNot: false
+SpaceAfterTemplateKeyword: false
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeCpp11BracedList: false
+SpaceBeforeCtorInitializerColon: true
+SpaceBeforeInheritanceColon: true
+SpaceBeforeParens: ControlStatements
+SpaceBeforeRangeBasedForLoopColon: true
+SpaceInEmptyParentheses: false
+SpacesBeforeTrailingComments: 1
+SpacesInAngles: Never
+SpacesInContainerLiterals: false
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+
+# Leave alone
+CompactNamespaces: false
+Cpp11BracedListStyle: true
+EmptyLineBeforeAccessModifier: LogicalBlock
+FixNamespaceComments: false
+IncludeBlocks: Preserve
+KeepEmptyLinesAtTheStartOfBlocks: true
+MaxEmptyLinesToKeep: 1
+ReflowComments: false
+SeparateDefinitionBlocks: Leave
+SortIncludes: Never
+SortUsingDeclarations: false
+
+# gmock's MOCK_METHOD is left verbatim: clang-format otherwise reads the first
+# parameter's `&` as a binary operator and writes `(Gesture & gesture)`.
+WhitespaceSensitiveMacros:
+  - MOCK_METHOD
+StatementMacros:
+  - JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR
+  - JUCE_DECLARE_NON_COPYABLE
+  - JUCE_LEAK_DETECTOR
