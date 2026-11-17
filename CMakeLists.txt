@@ -1,8 +1,12 @@
 cmake_minimum_required(VERSION 3.21)
 
 # Board / platform must be set before the SDK is imported.
-set(PICO_BOARD pico2 CACHE STRING "Target board")
+set(PICO_BOARD sparkfun_promicro_rp2350 CACHE STRING "Target board")
 set(PICO_PLATFORM rp2350-arm-s CACHE STRING "Target platform")
+
+# TinyUSB debug logging (picked up by TinyUSB's rp2040 family.cmake). Debug builds default to 1,
+# which prints to UART from inside USB handling and delays control transfers.
+set(LOG 0)
 
 include(cmake/pico_sdk_import.cmake)
 
@@ -18,6 +22,7 @@ add_executable(rpdsp
     src/dsp/RingModulator.cpp
     src/usb/AudioDevice.cpp
     src/usb/UsbDescriptors.cpp
+    src/led/Ws2812.cpp
 )
 
 target_include_directories(rpdsp PRIVATE
@@ -36,7 +41,17 @@ target_compile_options(rpdsp PRIVATE
 target_link_libraries(rpdsp PRIVATE
     pico_stdlib
     pico_unique_id
+    pico_usb_reset
     tinyusb_device
+    hardware_pio
+)
+
+# picotool reset interface (vendor class + MS OS 2.0 descriptor so Windows binds WinUSB to it)
+target_compile_definitions(rpdsp PRIVATE
+    PICO_ENABLE_USB_RESET_VIA_VENDOR_INTERFACE=1
+    PICO_USB_RESET_INCLUDE_DEFAULT_APP_DRIVER_CB=1
+    PICO_USB_RESET_SUPPORT_MS_OS_20_DESCRIPTOR=1
+    PICO_USB_RESET_MS_OS_20_DESCRIPTOR_ITF=3
 )
 
 # USB is owned by the audio device, so stdio goes to UART (GP0/GP1)

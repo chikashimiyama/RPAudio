@@ -1,5 +1,6 @@
 #include "dsp/RingModulator.h"
 
+#include <algorithm>
 #include <cmath>
 
 namespace rp::dsp
@@ -22,8 +23,9 @@ void RingModulator::process(const int16_t* input, int16_t* output, size_t numSam
     for (size_t i = 0; i < numSamples; ++i)
     {
         const float carrier = std::sin(phase_);
-        // |carrier| <= 1, so the product always fits in int16_t.
-        output[i] = static_cast<int16_t>(static_cast<float>(input[i]) * carrier);
+        // -32768 * -1 = 32768 does not fit in int16_t, so clamp.
+        const float product = static_cast<float>(input[i]) * carrier;
+        output[i] = static_cast<int16_t>(std::clamp(product, -32768.0f, 32767.0f));
 
         phase_ += phaseIncrement_;
         if (phase_ >= twoPi)
