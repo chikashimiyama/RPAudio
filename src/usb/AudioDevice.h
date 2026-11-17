@@ -23,6 +23,15 @@ public:
     // Called from the TinyUSB OUT-endpoint callback.
     void onAudioReceived(size_t numBytes);
 
+    // Logs packet counts since the previous call. Call about once per second.
+    void logStats();
+
+    // True if the host sent speaker data recently.
+    bool isSpeakerStreaming() const;
+
+    // True if the host polled the microphone endpoint recently.
+    bool isMicrophoneStreaming() const;
+
 private:
     dsp::IAudioProcessorPtr processor_;
 };

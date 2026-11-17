@@ -22,6 +22,7 @@ enum StringIndex : uint8_t
     SpeakerInterface,
     MicrophoneInterface,
     ResetInterface,
+    DebugInterface,
     Count
 };
 
@@ -34,7 +35,7 @@ const tusb_desc_device_t deviceDescriptor = {
     MISC_PROTOCOL_IAD,          // bDeviceProtocol
     CFG_TUD_ENDPOINT0_SIZE,     // bMaxPacketSize0
     0xCAFE,                     // idVendor  (TinyUSB test VID - replace for production)
-    0x4010,                     // idProduct
+    0x4011,                     // idProduct (changed when the interface set changes)
     0x0101,                     // bcdDevice (bump when the descriptor layout changes)
     StringIndex::Manufacturer,  // iManufacturer
     StringIndex::Product,       // iProduct
@@ -42,7 +43,10 @@ const tusb_desc_device_t deviceDescriptor = {
     1                           // bNumConfigurations
 };
 
-constexpr uint16_t configTotalLength = TUD_CONFIG_DESC_LEN + RP_AUDIO_DESC_LEN + TUD_RPI_RESET_DESC_LEN;
+constexpr uint16_t configTotalLength = TUD_CONFIG_DESC_LEN + RP_AUDIO_DESC_LEN + TUD_RPI_RESET_DESC_LEN + TUD_CDC_DESC_LEN;
+
+constexpr uint8_t debugCdcNotifySize = 8;
+constexpr uint8_t debugCdcBulkSize = 64;
 
 constexpr uint8_t volumeMuteControls =
     (AUDIO_CTRL_RW << AUDIO_FEATURE_UNIT_CTRL_MUTE_POS) | (AUDIO_CTRL_RW << AUDIO_FEATURE_UNIT_CTRL_VOLUME_POS);
@@ -105,6 +109,10 @@ const uint8_t configurationDescriptor[] = {
 
     // Vendor reset interface so `picotool reboot -f` / `picotool load -f` can enter BOOTSEL
     TUD_RPI_RESET_DESCRIPTOR(RP_ITF_NUM_RESET, StringIndex::ResetInterface),
+
+    // Debug log serial port (CDC ACM, has its own IAD)
+    TUD_CDC_DESCRIPTOR(RP_ITF_NUM_DEBUG_CDC, StringIndex::DebugInterface, RP_EP_DEBUG_CDC_NOTIFY, debugCdcNotifySize,
+        RP_EP_DEBUG_CDC_OUT, RP_EP_DEBUG_CDC_IN, debugCdcBulkSize),
 };
 
 static_assert(sizeof(configurationDescriptor) == configTotalLength, "Configuration descriptor length mismatch");
@@ -117,6 +125,7 @@ const char* const strings[StringIndex::Count] = {
     "rpdsp Input",     // Speaker interface (host -> device)
     "rpdsp Output",    // Microphone interface (device -> host)
     "Reset",           // picotool reset interface
+    "rpdsp Debug",     // debug log serial port
 };
 
 constexpr size_t maxStringChars = 32;

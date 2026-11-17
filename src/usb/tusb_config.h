@@ -21,7 +21,10 @@ extern "C" {
 #define CFG_TUD_MAX_SPEED           OPT_MODE_FULL_SPEED
 #define CFG_TUD_ENDPOINT0_SIZE      64
 
-#define CFG_TUD_CDC                 0
+#define CFG_TUD_CDC                 1 // debug log serial port
+#define CFG_TUD_CDC_RX_BUFSIZE      64
+#define CFG_TUD_CDC_TX_BUFSIZE      1024
+#define CFG_TUD_CDC_EP_BUFSIZE      64
 #define CFG_TUD_MSC                 0
 #define CFG_TUD_HID                 0
 #define CFG_TUD_MIDI                0
@@ -59,6 +62,16 @@ extern "C" {
 #define CFG_TUD_AUDIO_FUNC_1_EP_OUT_SZ_MAX \
     TUD_AUDIO_EP_SIZE(RP_AUDIO_SAMPLE_RATE, RP_AUDIO_BYTES_PER_SAMPLE, RP_AUDIO_N_CHANNELS)
 #define CFG_TUD_AUDIO_FUNC_1_EP_OUT_SW_BUF_SZ               (CFG_TUD_AUDIO_FUNC_1_EP_OUT_SZ_MAX * 4)
+
+// Use TinyUSB's decoding path with a support FIFO for OUT. The plain EP OUT FIFO path stops re-arming the endpoint
+// after a zero-length packet (TU_VERIFY on tu_fifo_write_n() returning 0), which Windows usbaudio2 sends when a
+// stream starts. The decoding path handles zero-length packets and always re-arms.
+#define CFG_TUD_AUDIO_ENABLE_DECODING                       1
+#define CFG_TUD_AUDIO_ENABLE_TYPE_I_DECODING                1
+#define CFG_TUD_AUDIO_FUNC_1_CHANNEL_PER_FIFO_RX            RP_AUDIO_N_CHANNELS
+#define CFG_TUD_AUDIO_FUNC_1_N_RX_SUPP_SW_FIFO              1
+// Multiple of 4 bytes: 16-bit mono is decoded in 32-bit words.
+#define CFG_TUD_AUDIO_FUNC_1_RX_SUPP_SW_FIFO_SZ             (CFG_TUD_AUDIO_FUNC_1_EP_OUT_SZ_MAX * 4)
 
 #ifdef __cplusplus
 }

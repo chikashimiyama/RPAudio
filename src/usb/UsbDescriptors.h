@@ -15,10 +15,14 @@
 #define RP_ITF_NUM_AUDIO_STREAMING_MIC  2
 #define RP_ITF_NUM_AUDIO_TOTAL          3
 #define RP_ITF_NUM_RESET                3 // picotool reset interface (outside the audio IAD)
-#define RP_ITF_NUM_TOTAL                4
+#define RP_ITF_NUM_DEBUG_CDC           4 // debug log serial port (2 interfaces)
+#define RP_ITF_NUM_TOTAL                6
 
 #define RP_EP_AUDIO_OUT                 0x01 // speaker stream (host -> device)
 #define RP_EP_AUDIO_IN                  0x81 // microphone stream (device -> host)
+#define RP_EP_DEBUG_CDC_NOTIFY          0x82
+#define RP_EP_DEBUG_CDC_OUT             0x03
+#define RP_EP_DEBUG_CDC_IN              0x83
 
 #define RP_AUDIO_DESC_LEN (TUD_AUDIO_DESC_IAD_LEN \
     + TUD_AUDIO_DESC_STD_AC_LEN \
