@@ -48,7 +48,7 @@ namespace
         CFG_TUD_ENDPOINT0_SIZE, // bMaxPacketSize0
         0xCAFE, // idVendor  (TinyUSB test VID - replace for production)
         productId, // idProduct
-        0x0101, // bcdDevice (bump when the descriptor layout changes)
+        0x0102, // bcdDevice (bump when the descriptor layout changes)
         StringIndex::Manufacturer, // iManufacturer
         StringIndex::Product, // iProduct
         StringIndex::Serial, // iSerialNumber
@@ -57,9 +57,6 @@ namespace
 
     constexpr uint16_t configTotalLength =
         TUD_CONFIG_DESC_LEN + RP_AUDIO_DESC_LEN + TUD_RPI_RESET_DESC_LEN + debugCdcDescriptorLength;
-
-    constexpr uint8_t volumeMuteControls =
-        (AUDIO_CTRL_RW << AUDIO_FEATURE_UNIT_CTRL_MUTE_POS) | (AUDIO_CTRL_RW << AUDIO_FEATURE_UNIT_CTRL_VOLUME_POS);
 
     constexpr uint16_t audioEpSize =
         TUD_AUDIO_EP_SIZE(RP_AUDIO_SAMPLE_RATE, RP_AUDIO_BYTES_PER_SAMPLE, RP_AUDIO_N_CHANNELS);
@@ -74,7 +71,7 @@ namespace
         // Class-specific AC interface header
         TUD_AUDIO_DESC_CS_AC(0x0200, AUDIO_FUNC_HEADSET,
                              TUD_AUDIO_DESC_CLK_SRC_LEN + 2 * TUD_AUDIO_DESC_INPUT_TERM_LEN +
-                                 TUD_AUDIO_DESC_FEATURE_UNIT_ONE_CHANNEL_LEN + 2 * TUD_AUDIO_DESC_OUTPUT_TERM_LEN,
+                                 2 * TUD_AUDIO_DESC_OUTPUT_TERM_LEN,
                              AUDIO_CS_AS_INTERFACE_CTRL_LATENCY_POS),
         // Internal programmable clock: frequency read/write, validity read (same as TinyUSB uac2_headset)
         TUD_AUDIO_DESC_CLK_SRC(RP_UAC2_ENTITY_CLOCK, AUDIO_CLOCK_SOURCE_ATT_INT_PRO_CLK,
@@ -82,14 +79,12 @@ namespace
                                    (AUDIO_CTRL_R << AUDIO_CLOCK_SOURCE_CTRL_CLK_VAL_POS),
                                0x00, 0x00),
 
-        // Speaker path: USB streaming -> feature unit (mute/volume) -> speaker
+        // Speaker path: USB streaming -> speaker (no feature unit: the host applies volume/mute in software)
         TUD_AUDIO_DESC_INPUT_TERM(RP_UAC2_ENTITY_SPK_INPUT_TERM, AUDIO_TERM_TYPE_USB_STREAMING, 0x00,
                                   RP_UAC2_ENTITY_CLOCK, RP_AUDIO_N_CHANNELS, AUDIO_CHANNEL_CONFIG_NON_PREDEFINED, 0x00,
                                   0x0000, 0x00),
-        TUD_AUDIO_DESC_FEATURE_UNIT_ONE_CHANNEL(RP_UAC2_ENTITY_SPK_FEATURE_UNIT, RP_UAC2_ENTITY_SPK_INPUT_TERM,
-                                                volumeMuteControls, volumeMuteControls, 0x00),
         TUD_AUDIO_DESC_OUTPUT_TERM(RP_UAC2_ENTITY_SPK_OUTPUT_TERM, AUDIO_TERM_TYPE_OUT_GENERIC_SPEAKER, 0x00,
-                                   RP_UAC2_ENTITY_SPK_FEATURE_UNIT, RP_UAC2_ENTITY_CLOCK, 0x0000, 0x00),
+                                   RP_UAC2_ENTITY_SPK_INPUT_TERM, RP_UAC2_ENTITY_CLOCK, 0x0000, 0x00),
 
         // Microphone path: microphone -> USB streaming
         TUD_AUDIO_DESC_INPUT_TERM(RP_UAC2_ENTITY_MIC_INPUT_TERM, AUDIO_TERM_TYPE_IN_GENERIC_MIC, 0x00,

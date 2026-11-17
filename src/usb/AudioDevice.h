@@ -4,8 +4,6 @@
 #include <cstdint>
 
 #include "dsp/IAudioProcessor.h"
-#include "tusb.h"
-#include "usb/AudioControl.h"
 #include "usb/StreamMonitor.h"
 
 namespace rp::usb
@@ -46,15 +44,11 @@ namespace rp::usb
         // A microphone (IN) packet was sent.
         void onMicrophonePacketSent(size_t numBytes);
 
-        bool handleEntityGetRequest(uint8_t rhport, const tusb_control_request_t* request);
-        bool handleEntitySetRequest(const tusb_control_request_t* request, const uint8_t* data);
-
         // Streaming on an interface stops (alt 0) or restarts.
         void onStreamClosing(uint8_t interfaceNumber);
 
     private:
         dsp::IAudioProcessorPtr processor_;
-        AudioControl audioControl_;
         StreamMonitor streamMonitor_;
     };
 

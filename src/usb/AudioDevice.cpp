@@ -5,6 +5,8 @@
 #include <utility>
 
 #include "debug/DebugLog.h"
+#include "tusb.h"
+#include "usb/AudioControl.h"
 #include "usb/IsoEndpoint.h"
 
 namespace rp::usb
@@ -96,16 +98,6 @@ namespace rp::usb
         streamMonitor_.onMicrophonePacket(numBytes);
     }
 
-    bool AudioDevice::handleEntityGetRequest(uint8_t rhport, const tusb_control_request_t* request)
-    {
-        return audioControl_.handleGetRequest(rhport, request);
-    }
-
-    bool AudioDevice::handleEntitySetRequest(const tusb_control_request_t* request, const uint8_t* data)
-    {
-        return audioControl_.handleSetRequest(request, data);
-    }
-
     void AudioDevice::onStreamClosing(uint8_t interfaceNumber)
     {
         // Drop the buffer that is still armed in hardware (see abortIsoEndpoint()).
@@ -156,20 +148,12 @@ bool tud_audio_tx_done_post_load_cb(uint8_t /*rhport*/, uint16_t n_bytes_copied,
 
 bool tud_audio_get_req_entity_cb(uint8_t rhport, const tusb_control_request_t* p_request)
 {
-    if (rp::usb::activeDevice == nullptr)
-    {
-        return false;
-    }
-    return rp::usb::activeDevice->handleEntityGetRequest(rhport, p_request);
+    return rp::usb::handleAudioControlGetRequest(rhport, p_request);
 }
 
 bool tud_audio_set_req_entity_cb(uint8_t /*rhport*/, const tusb_control_request_t* p_request, uint8_t* pBuff)
 {
-    if (rp::usb::activeDevice == nullptr)
-    {
-        return false;
-    }
-    return rp::usb::activeDevice->handleEntitySetRequest(p_request, pBuff);
+    return rp::usb::handleAudioControlSetRequest(p_request, pBuff);
 }
 
 // Requests addressed to an endpoint or an interface are not supported; log them so they are visible.
