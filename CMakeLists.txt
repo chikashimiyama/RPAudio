@@ -27,6 +27,8 @@ pico_sdk_init()
 
 add_executable(rpdsp
     src/main.cpp
+    src/dsp/BiquadFilter.cpp
+    src/dsp/FirFilter.cpp
     src/dsp/RingModulator.cpp
     src/usb/AudioDevice.cpp
     src/usb/AudioControl.cpp
