@@ -1,0 +1,19 @@
+; WS2812 PIO program (from pico-examples ws2812.pio, BSD-3-Clause).
+; Shifts out one bit per T1 + T2 + T3 cycles: a long high pulse is a 1, a short one is a 0.
+
+.program ws2812
+.side_set 1
+
+.define public T1 2
+.define public T2 5
+.define public T3 3
+
+.wrap_target
+bitloop:
+    out x, 1       side 0 [T3 - 1] ; side-set still takes place when the instruction stalls
+    jmp !x do_zero side 1 [T1 - 1] ; branch on the bit we shifted out; positive pulse
+do_one:
+    jmp  bitloop   side 1 [T2 - 1] ; continue driving high, for a long pulse
+do_zero:
+    nop            side 0 [T2 - 1] ; or drive low, for a short pulse
+.wrap

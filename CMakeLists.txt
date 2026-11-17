@@ -62,6 +62,8 @@ target_compile_options(rpdsp PRIVATE
     $<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions -fno-rtti>
 )
 
+pico_generate_pio_header(rpdsp ${CMAKE_CURRENT_LIST_DIR}/src/led/ws2812.pio)
+
 target_link_libraries(rpdsp PRIVATE
     pico_stdlib
     pico_unique_id
