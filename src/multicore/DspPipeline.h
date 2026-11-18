@@ -3,6 +3,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <optional>
 
 #include "dsp/IAudioProcessor.h"
 #include "multicore/IMailbox.h"
@@ -13,7 +14,7 @@ namespace rp::multicore
     // Hands audio blocks from core 0 to an audio processor running on core 1 and back.
     //
     // Blocks live in a fixed pool of slots. Each slot is owned by exactly one core at a time; ownership moves with
-    // the message that carries the slot index, so the cores never touch the same slot concurrently and no lock is
+    // the BlockMessage that carries the slot index, so the cores never touch the same slot concurrently and no lock is
     // needed. The slot count does not exceed the mailbox depth, so sending never has to wait.
     //
     // Core 0 calls submit() and drain(), which never block. Core 1 calls processNext() in a loop.
@@ -53,32 +54,27 @@ namespace rp::multicore
     private:
         using Slot = std::array<int16_t, maxBlockSamples>;
 
-        // Message layout: slot index in the low 16 bits, sample count in the high 16 bits.
-        static uint32_t packMessage(size_t slotIndex, size_t numSamples);
-        static size_t slotIndexOf(uint32_t message);
-        static size_t numSamplesOf(uint32_t message);
-
-        void releaseSlot(size_t slotIndex);
+        // Index of a free slot, or nothing if all slots are in flight.
+        std::optional<size_t> findFreeSlot() const;
 
         dsp::IAudioProcessorPtr processor_;
         IMailboxPtr core0Mailbox_;
         IMailboxPtr core1Mailbox_;
         std::array<Slot, numSlots> slots_{};
-        uint32_t freeSlotMask_; // bit i set = slot i is free. Touched by core 0 only.
+        std::array<bool, numSlots> isSlotFree_; // Touched by core 0 only.
     };
 
     template<typename Sink>
     void DspPipeline::drain(Sink&& sink)
     {
-        while (const std::optional<uint32_t> message = core0Mailbox_->tryReceive())
+        while (const std::optional<BlockMessage> message = core0Mailbox_->tryReceive())
         {
-            const size_t slotIndex = slotIndexOf(*message);
-            if (slotIndex >= numSlots)
+            if (message->slotIndex >= numSlots)
             {
                 continue;
             }
-            sink(static_cast<const int16_t*>(slots_[slotIndex].data()), numSamplesOf(*message));
-            releaseSlot(slotIndex);
+            sink(static_cast<const int16_t*>(slots_[message->slotIndex].data()), message->numSamples);
+            isSlotFree_[message->slotIndex] = true;
         }
     }
 

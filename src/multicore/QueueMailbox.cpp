@@ -9,19 +9,19 @@ namespace rp::multicore
     {
     }
 
-    bool QueueMailbox::trySend(uint32_t message)
+    bool QueueMailbox::trySend(const BlockMessage& message)
     {
         return queue_try_add(sendQueue_, &message);
     }
 
-    void QueueMailbox::sendBlocking(uint32_t message)
+    void QueueMailbox::sendBlocking(const BlockMessage& message)
     {
         queue_add_blocking(sendQueue_, &message);
     }
 
-    std::optional<uint32_t> QueueMailbox::tryReceive()
+    std::optional<BlockMessage> QueueMailbox::tryReceive()
     {
-        uint32_t message = 0;
+        BlockMessage message;
         if (!queue_try_remove(receiveQueue_, &message))
         {
             return std::nullopt;
@@ -29,9 +29,9 @@ namespace rp::multicore
         return message;
     }
 
-    uint32_t QueueMailbox::receiveBlocking()
+    BlockMessage QueueMailbox::receiveBlocking()
     {
-        uint32_t message = 0;
+        BlockMessage message;
         queue_remove_blocking(receiveQueue_, &message);
         return message;
     }

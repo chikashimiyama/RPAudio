@@ -28,8 +28,8 @@ namespace rp::multicore
 
     DspCore::DspCore(dsp::IAudioProcessorPtr processor)
     {
-        queue_init(&toCore1Queue_, sizeof(uint32_t), queueCapacity);
-        queue_init(&toCore0Queue_, sizeof(uint32_t), queueCapacity);
+        queue_init(&toCore1Queue_, sizeof(BlockMessage), queueCapacity);
+        queue_init(&toCore0Queue_, sizeof(BlockMessage), queueCapacity);
         pipeline_ = std::make_unique<DspPipeline>(std::move(processor),
                                                   std::make_unique<QueueMailbox>(&toCore1Queue_, &toCore0Queue_),
                                                   std::make_unique<QueueMailbox>(&toCore0Queue_, &toCore1Queue_));
