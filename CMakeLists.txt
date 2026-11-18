@@ -30,6 +30,9 @@ add_executable(rpdsp
     src/dsp/BiquadFilter.cpp
     src/dsp/FirFilter.cpp
     src/dsp/RingModulator.cpp
+    src/multicore/DspCore.cpp
+    src/multicore/DspPipeline.cpp
+    src/multicore/SioMailbox.cpp
     src/usb/AudioDevice.cpp
     src/usb/AudioControl.cpp
     src/usb/StreamMonitor.cpp
@@ -68,6 +71,7 @@ pico_generate_pio_header(rpdsp ${CMAKE_CURRENT_LIST_DIR}/src/led/ws2812.pio)
 
 target_link_libraries(rpdsp PRIVATE
     pico_stdlib
+    pico_multicore
     pico_unique_id
     pico_usb_reset
     tinyusb_device

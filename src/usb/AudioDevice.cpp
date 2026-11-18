@@ -21,6 +21,9 @@ namespace rp::usb
         constexpr uint16_t bytesPerMillisecond =
             RP_AUDIO_SAMPLE_RATE / 1000 * RP_AUDIO_BYTES_PER_SAMPLE * RP_AUDIO_N_CHANNELS;
 
+        static_assert(maxSamplesPerTransfer <= multicore::DspPipeline::maxBlockSamples,
+                      "a speaker transfer must fit in one DSP block");
+
         // Static rather than members: keeps them off the main stack, where AudioDevice lives.
         std::array<int16_t, maxSamplesPerTransfer> audioBuffer{};
         const std::array<uint8_t, bytesPerMillisecond> silence{};
@@ -30,7 +33,7 @@ namespace rp::usb
     } // namespace
 
     AudioDevice::AudioDevice(dsp::IAudioProcessorPtr processor)
-        : processor_(std::move(processor))
+        : dspCore_(std::move(processor))
     {
         activeDevice = this;
         tud_init(rootHubPort);
@@ -44,6 +47,7 @@ namespace rp::usb
     void AudioDevice::task()
     {
         tud_task();
+        collectProcessedAudio();
     }
 
     void AudioDevice::logStats()
@@ -70,10 +74,18 @@ namespace rp::usb
             tud_audio_read_support_ff(speakerFifoIndex, audioBuffer.data(), static_cast<uint16_t>(bytesToRead));
         const size_t numSamples = bytesRead / sizeof(int16_t);
 
-        processor_->process(audioBuffer.data(), audioBuffer.data(), numSamples);
+        // Processed on core 1; the result is collected by collectProcessedAudio().
+        if (!dspCore_.submit(audioBuffer.data(), numSamples))
+        {
+            streamMonitor_.onBlockDropped();
+        }
+    }
 
+    void AudioDevice::collectProcessedAudio()
+    {
         // Queue for the IN endpoint. If the host is not recording, the FIFO fills up and further data is dropped.
-        tud_audio_write(audioBuffer.data(), static_cast<uint16_t>(numSamples * sizeof(int16_t)));
+        dspCore_.drain([](const int16_t* samples, size_t numSamples)
+                       { tud_audio_write(samples, static_cast<uint16_t>(numSamples * sizeof(int16_t))); });
     }
 
     // A real microphone always delivers samples. Without speaker input there is nothing to process, so the IN
@@ -81,6 +93,9 @@ namespace rp::usb
     // MME) then never start sending speaker data. Keep the microphone running with silence while the speaker is idle.
     void AudioDevice::onMicrophonePacketLoading()
     {
+        // Last chance for blocks core 1 has just finished to make it into this packet.
+        collectProcessedAudio();
+
         if (!streamMonitor_.isSpeakerIdle())
         {
             return;

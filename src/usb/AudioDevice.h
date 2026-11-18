@@ -4,17 +4,19 @@
 #include <cstdint>
 
 #include "dsp/IAudioProcessor.h"
+#include "multicore/DspCore.h"
 #include "usb/StreamMonitor.h"
 
 namespace rp::usb
 {
 
     // USB Audio Class 2 device: mono 16-bit 48 kHz.
-    // Audio received from the host (speaker) is processed and sent back to the host (microphone).
+    // Audio received from the host (speaker) is processed on core 1 and sent back to the host (microphone).
     // Only one instance may exist, because the TinyUSB callbacks are global.
     class AudioDevice
     {
     public:
+        // Launches core 1, which runs the processor from then on.
         explicit AudioDevice(dsp::IAudioProcessorPtr processor);
         ~AudioDevice();
 
@@ -48,7 +50,10 @@ namespace rp::usb
         void onStreamClosing(uint8_t interfaceNumber);
 
     private:
-        dsp::IAudioProcessorPtr processor_;
+        // Queues the blocks core 1 has finished for the IN endpoint.
+        void collectProcessedAudio();
+
+        multicore::DspCore dspCore_;
         StreamMonitor streamMonitor_;
     };
 
