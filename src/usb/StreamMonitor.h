@@ -14,6 +14,9 @@ namespace rp::usb
         void onSpeakerPacket(size_t numBytes);
         void onMicrophonePacket(size_t numBytes);
 
+        // A speaker block could not be handed to core 1 (it is falling behind) and was dropped.
+        void onBlockDropped();
+
         // True if the stream moved data within the last 50 ms (for the status LED).
         bool isSpeakerStreaming() const;
         bool isMicrophoneStreaming() const;
@@ -32,6 +35,7 @@ namespace rp::usb
             uint32_t speakerBytes = 0;
             uint32_t microphonePackets = 0;
             uint32_t microphoneBytes = 0;
+            uint32_t droppedBlocks = 0;
         };
 
         uint64_t lastSpeakerPacketUs_ = 0; // 0 = never

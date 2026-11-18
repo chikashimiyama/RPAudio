@@ -39,6 +39,11 @@ namespace rp::usb
         stats_.microphoneBytes += numBytes;
     }
 
+    void StreamMonitor::onBlockDropped()
+    {
+        ++stats_.droppedBlocks;
+    }
+
     bool StreamMonitor::isSpeakerStreaming() const
     {
         return isWithin(lastSpeakerPacketUs_, streamTimeoutUs);
@@ -65,12 +70,12 @@ namespace rp::usb
         {
             return;
         }
-        rp::debug::log("stats/s: spk pkts=%lu zlp=%lu bytes=%lu | mic pkts=%lu bytes=%lu",
-                       static_cast<unsigned long>(snapshot.speakerPackets),
-                       static_cast<unsigned long>(snapshot.speakerZeroLengthPackets),
-                       static_cast<unsigned long>(snapshot.speakerBytes),
-                       static_cast<unsigned long>(snapshot.microphonePackets),
-                       static_cast<unsigned long>(snapshot.microphoneBytes));
+        rp::debug::log(
+            "stats/s: spk pkts=%lu zlp=%lu bytes=%lu | mic pkts=%lu bytes=%lu | dsp drops=%lu",
+            static_cast<unsigned long>(snapshot.speakerPackets),
+            static_cast<unsigned long>(snapshot.speakerZeroLengthPackets),
+            static_cast<unsigned long>(snapshot.speakerBytes), static_cast<unsigned long>(snapshot.microphonePackets),
+            static_cast<unsigned long>(snapshot.microphoneBytes), static_cast<unsigned long>(snapshot.droppedBlocks));
     }
 
 } // namespace rp::usb
