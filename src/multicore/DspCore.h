@@ -7,6 +7,7 @@
 
 #include "dsp/IAudioProcessor.h"
 #include "multicore/DspPipeline.h"
+#include "pico/util/queue.h"
 
 namespace rp::multicore
 {
@@ -34,6 +35,10 @@ namespace rp::multicore
         }
 
     private:
+        // Messages core 0 -> core 1 and core 1 -> core 0. Declared before pipeline_, whose mailboxes refer to them.
+        queue_t toCore1Queue_{};
+        queue_t toCore0Queue_{};
+
         // On the heap: the slots are too large for the main stack.
         std::unique_ptr<DspPipeline> pipeline_;
     };

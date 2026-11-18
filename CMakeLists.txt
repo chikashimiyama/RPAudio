@@ -32,7 +32,7 @@ add_executable(rpdsp
     src/dsp/RingModulator.cpp
     src/multicore/DspCore.cpp
     src/multicore/DspPipeline.cpp
-    src/multicore/SioMailbox.cpp
+    src/multicore/QueueMailbox.cpp
     src/usb/AudioDevice.cpp
     src/usb/AudioControl.cpp
     src/usb/StreamMonitor.cpp
